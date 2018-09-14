@@ -56,9 +56,9 @@ describe('./lib/gcf/funcHandle.js', () => {
     })
     describe('#createHandler', () => {
       const { createHandler } = func.handle.impl
-      const response = { writeHead: (code, header) => {}, end: (body) => {}, json: (obj) => {}}
-      const addMetadataToInput = input => input
       const readTimeout = () => Promise.resolve(300000) // 300 seconds =>5 min
+      const functionName = 'loadGenerator'
+      const getFunctionName = () => functionName
       it('should capture an unhandled rejection', () => {
         const mergeAndInvoke = sinon.stub().returns(BbPromise.delay(20))
         const handleTimeout = sinon.stub().callsFake(resolve =>
@@ -77,13 +77,16 @@ describe('./lib/gcf/funcHandle.js', () => {
                 reject(err)
               }
             })
+          const response = {json: (obj) => resolve(obj)}
           const entry = createHandler(
-            { createUnhandledRejectionHandler, handleTimeout, mergeAndInvoke, addMetadataToInput, readTimeout })()
+            { createUnhandledRejectionHandler, handleTimeout, mergeAndInvoke, addMetadataToInput, readTimeout,
+              getFunctionName })()
           entry({}, response)
         })
       })
       it('should time out', () => {
         const { createUnhandledRejectionHandler } = func.handle.impl
+        const addMetadataToInput = input => input
         const mergeAndInvoke = sinon.stub()
           .returns(new Promise(resolve => setTimeout(resolve, 20)))
         const handleTimeout = sinon.stub().callsFake(resolve =>
@@ -93,18 +96,19 @@ describe('./lib/gcf/funcHandle.js', () => {
           const entry = createHandler(
             {
               createUnhandledRejectionHandler, handleTimeout, mergeAndInvoke, addMetadataToInput,
-              readTimeout: readTimeoutForTimeout,
+              readTimeout: readTimeoutForTimeout, getFunctionName
             },
             10
           )()
-          const responseTimeout = { writeHead: (code, header) => {}, end: (body) => {resolve(body)}, json: (obj) => {resolve(obj)}}
+          const responseTimeout = { json: (obj) => resolve(obj)}
           entry({body: '{}' }, responseTimeout)
         })
           .then(result => assert.strictEqual(result, 'reasons'))
       })
       it('should invoke the handler', () => {
         const { createUnhandledRejectionHandler, handleTimeout } = func.handle.impl
-        const answer = {}
+        const addMetadataToInput = input => input
+        const answer = {'body': 'value'}
         const mergeAndInvoke = sinon.stub().returns(Promise.resolve(answer))
         const taskHandler = () => {}
         const input = {}
@@ -112,18 +116,20 @@ describe('./lib/gcf/funcHandle.js', () => {
           const entry = createHandler(
             {
               createUnhandledRejectionHandler, handleTimeout, mergeAndInvoke, addMetadataToInput, readTimeout,
+              getFunctionName
             }
           )(taskHandler)
-          const callback = (err, result) => { err ? reject(err) : resolve(result) }
+          const response = {json: (obj) => resolve(obj)}
           entry(input, response)
         })
           .then((result) => {
             assert.strictEqual(result, answer)
-            assert.isOk(mergeAndInvoke.calledWithExactly(taskHandler, input))
+            assert.isOk(mergeAndInvoke.calledWithExactly(taskHandler, input.body))
           })
       })
       it('should return a message on handler error', () => {
         const { createUnhandledRejectionHandler, handleTimeout } = func.handle.impl
+        const addMetadataToInput = input => input
         const mergeAndInvoke = sinon.stub()
           .returns(Promise.reject(new Error('reasons')))
         const context = { getRemainingTimeInMillis: () => 60000 }
@@ -132,12 +138,10 @@ describe('./lib/gcf/funcHandle.js', () => {
           const entry = createHandler(
             {
               createUnhandledRejectionHandler, handleTimeout, mergeAndInvoke, addMetadataToInput,
-              readTimeout
+              readTimeout, getFunctionName
             }
           )()
-          const callback = (err, result) => {
-            err ? reject(err) : resolve(result)
-          }
+          const response = {json: (obj) => resolve(obj)}
           entry(input, response)
         })
           .then(result =>
@@ -148,21 +152,24 @@ describe('./lib/gcf/funcHandle.js', () => {
         const answer = {}
         const inputWithMetadata = { _funcAws: { functionName: 'foo' } }
         const mergeAndInvoke = sinon.stub().returns(Promise.resolve(answer))
-        const context = { getRemainingTimeInMillis: () => 60000 }
         const addMetadataToInputFake = sinon.stub().callsFake(() => inputWithMetadata)
         const taskHandler = () => {}
-        const input = {}
+        const input = {'body': 'value'}
+        const context = {
+          'functionName': functionName
+        }
         return new Promise((resolve, reject) => {
           const entry = createHandler(
             {
-              createUnhandledRejectionHandler, handleTimeout, mergeAndInvoke, addMetadataToInputFake, readTimeout
+              createUnhandledRejectionHandler, handleTimeout, mergeAndInvoke,
+              addMetadataToInput: addMetadataToInputFake, readTimeout, getFunctionName
             }
           )(taskHandler)
-          const callback = (err, result) => { err ? reject(err) : resolve(result) }
+          const response = {json: (obj) => resolve(obj)}
           entry(input, response)
         })
           .then(() => {
-            assert.isOk(addMetadataToInput.calledWithExactly(input, context))
+            assert.isOk(addMetadataToInputFake.calledWithExactly(input.body, context))
             assert.isOk(mergeAndInvoke.calledWithExactly(taskHandler, inputWithMetadata))
           })
       })
