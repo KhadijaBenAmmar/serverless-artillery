@@ -10,6 +10,7 @@
   "scripts": {
     "test": "./node_modules/.bin/nyc ./node_modules/.bin/_mocha -r aws-sdk \"./tests/**/*.spec.js\"",
     "light": "./node_modules/.bin/nyc ./node_modules/.bin/_mocha -r aws-sdk \"./tests/**/!(serverless-artillery|npm).spec.js\"",
+    "gcf": "./node_modules/.bin/_mocha -r aws-sdk \"./tests/lib/gcf/*.spec.js\"",
     "coverage": "./node_modules/.bin/nyc report --reporter=text-lcov | coveralls",
     "lint": "./node_modules/.bin/eslint . bin/serverless-artillery",
     "postinstall": "node ./postinstall.js",
@@ -38,6 +39,7 @@
   "dependencies": {
     "aws-sdk": "^2.230.1",
     "bluebird": "^3.5.1",
+    "chalk": "^2.4.1",
     "diff": "^3.5.0",
     "get-stdin": "^6.0.0",
     "js-yaml": "^3.11.0",
