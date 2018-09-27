@@ -4,6 +4,7 @@ const chaiAsPromised = require('chai-as-promised')
 const path = require('path')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
+const axios = require('axios')
 
 chai.use(chaiAsPromised)
 chai.use(sinonChai)
@@ -34,12 +35,16 @@ const validScript = () => ({
 })
 
 describe('./lib/gcf/funcExec.js', () => {
+  let sandbox;
   beforeEach(() => {
-    awsStub = sinon.stub(aws.Service.prototype, 'makeRequest')
+    // awsStub = sinon.stub(aws.Service.prototype, 'makeRequest')
+    sandbox = sinon.sandbox.create()
   })
   afterEach(() => {
-    awsStub.restore()
+    // awsStub.restore()
+    sandbox.restore()
   })
+
   describe(':impl', () => {
     beforeEach(() => {
       // gcf invocation stubbing

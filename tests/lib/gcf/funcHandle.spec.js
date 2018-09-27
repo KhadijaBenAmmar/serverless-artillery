@@ -48,17 +48,28 @@ describe('./lib/gcf/funcHandle.js', () => {
       const { addMetadataToInput } = func.handle.impl
       it('should return a new object with the function name metadata', () => {
         const input = { foo: 'bar' }
-        const context = { functionName: 'baz' }
+        const context = { functionName: 'baz', projectName: 'pn', regionName: "region" }
         const output = addMetadataToInput(input, context)
         assert.notStrictEqual(input, output)
-        assert.deepStrictEqual(output, { foo: 'bar', _funcAws: { functionName: 'baz' } })
+        assert.deepStrictEqual(output, { foo: 'bar', functionName: 'baz', regionName: 'region', projectName: 'pn'})
       })
     })
     describe('#createHandler', () => {
       const { createHandler } = func.handle.impl
       const readTimeout = () => Promise.resolve(300000) // 300 seconds =>5 min
       const functionName = 'loadGenerator'
+      const regionName = 'us-central1'
+      const projectName = 'sampleProjectName'
+
       const getFunctionName = () => functionName
+      const getRegionName = () => regionName
+      const getProjectName = () => projectName
+      // this context is produced by the code, if that changes, the unit test case should fail.
+      const context = {
+        'functionName': functionName,
+        'regionName' : regionName,
+        'projectName' : projectName
+      }
       it('should capture an unhandled rejection', () => {
         const mergeAndInvoke = sinon.stub().returns(BbPromise.delay(20))
         const handleTimeout = sinon.stub().callsFake(resolve =>
@@ -80,7 +91,7 @@ describe('./lib/gcf/funcHandle.js', () => {
           const response = {json: (obj) => resolve(obj)}
           const entry = createHandler(
             { createUnhandledRejectionHandler, handleTimeout, mergeAndInvoke, addMetadataToInput, readTimeout,
-              getFunctionName })()
+              getFunctionName, getRegionName, getProjectName })()
           entry({}, response)
         })
       })
@@ -96,7 +107,7 @@ describe('./lib/gcf/funcHandle.js', () => {
           const entry = createHandler(
             {
               createUnhandledRejectionHandler, handleTimeout, mergeAndInvoke, addMetadataToInput,
-              readTimeout: readTimeoutForTimeout, getFunctionName
+              readTimeout: readTimeoutForTimeout, getFunctionName, getRegionName, getProjectName
             },
             10
           )()
@@ -116,7 +127,7 @@ describe('./lib/gcf/funcHandle.js', () => {
           const entry = createHandler(
             {
               createUnhandledRejectionHandler, handleTimeout, mergeAndInvoke, addMetadataToInput, readTimeout,
-              getFunctionName
+              getFunctionName, getRegionName, getProjectName
             }
           )(taskHandler)
           const response = {json: (obj) => resolve(obj)}
@@ -138,7 +149,7 @@ describe('./lib/gcf/funcHandle.js', () => {
           const entry = createHandler(
             {
               createUnhandledRejectionHandler, handleTimeout, mergeAndInvoke, addMetadataToInput,
-              readTimeout, getFunctionName
+              readTimeout, getFunctionName, getRegionName, getProjectName
             }
           )()
           const response = {json: (obj) => resolve(obj)}
@@ -150,19 +161,16 @@ describe('./lib/gcf/funcHandle.js', () => {
       it('should add metadata to input', () => {
         const { createUnhandledRejectionHandler, handleTimeout } = func.handle.impl
         const answer = {}
-        const inputWithMetadata = { _funcAws: { functionName: 'foo' } }
+        const inputWithMetadata = { functionName: 'foo', projectName: 'pn', regionName: 'region' }
         const mergeAndInvoke = sinon.stub().returns(Promise.resolve(answer))
         const addMetadataToInputFake = sinon.stub().callsFake(() => inputWithMetadata)
         const taskHandler = () => {}
         const input = {'body': 'value'}
-        const context = {
-          'functionName': functionName
-        }
         return new Promise((resolve, reject) => {
           const entry = createHandler(
             {
               createUnhandledRejectionHandler, handleTimeout, mergeAndInvoke,
-              addMetadataToInput: addMetadataToInputFake, readTimeout, getFunctionName
+              addMetadataToInput: addMetadataToInputFake, readTimeout, getFunctionName, getRegionName, getProjectName
             }
           )(taskHandler)
           const response = {json: (obj) => resolve(obj)}
