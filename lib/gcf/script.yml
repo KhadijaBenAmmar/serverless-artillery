@@ -6,21 +6,22 @@
   # https://artillery.io/docs/
   _trace: true
   _split:
-    maxChunkDurationInSeconds: 15
-    maxChunkRequestsPerSecond: 1
+#    maxChunkDurationInSeconds: 20
+    maxChunkRequestsPerSecond: 10
   config:
     plugins:
       cloudwatch:
         namespace : loadGenerator
     target: "https://us-central1-vikj-61740.cloudfunctions.net/helloGET2" # this hostname will be used for each part of the flow
     phases:
-      - duration: 20
-        arrivalRate: 2
-#      - duration: 240
+#      - duration: 900
 #        arrivalRate: 50
-#        rampTo: 500
-#      - duration: 600
-#        arrivalRate: 500
+      - duration: 240
+        arrivalRate: 50
+        rampTo: 500
+      - duration:
+
+        arrivalRate: 500
   scenarios:
     -
       flow:

@@ -4,10 +4,10 @@ provider:
   name: google
   runtime: nodejs
   region: us-central1
-  memorySize: 1024
-  project: sadasd
+  memorySize: 2048
+  project: vikj-61740
   # the path to the credentials file needs to be absolute
-  credentials: ~/.gcloud/vsdsdsdbe67be.json
+  credentials: ~/.gcloud/vikj-61740-5bad43be67be.json
 
 plugins:
   - serverless-google-cloudfunctions
@@ -26,9 +26,10 @@ functions:
     handler: loadGenerator
     timeout: 300s
     events:
-      - http: path
+      - event:
+          eventType: providers/cloud.pubsub/eventTypes/topic.publish
+          resource: projects/vikj-61740/topics/loadgeneratortopic
     environment:
-            AWS_ACCESS_KEY_ID: X
-            AWS_SECRET_ACCESS_KEY: Y
+            AWS_ACCESS_KEY_ID: A
+            AWS_SECRET_ACCESS_KEY: X
             AWS_REGION: us-east-1
-
