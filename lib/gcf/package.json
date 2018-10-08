@@ -15,6 +15,7 @@
     "artillery-core": "^2.0.3-0",
     "artillery-plugin-cloudwatch": "0.0.2",
     "aws-sdk": "^2.320.0",
+    "axios": "^0.18.0",
     "csv-parse": "^1.1.7",
     "dateformat": "^3.0.3",
     "google-auth-library": "^2.0.0",

@@ -22,14 +22,23 @@ package:
     - .gitignore
     - .git/**
 functions:
+#  loadGeneratorCP:
+#    handler: loadGeneratorCP
+#    timeout: 300s
+#    events:
+#      - event:
+#          eventType: providers/cloud.pubsub/eventTypes/topic.publish
+#          resource: projects/vikj-61740/topics/loadgeneratortopic3
+#    environment:
+#            AWS_ACCESS_KEY_ID: AKIAJTDKZCIY2K6W5COA
+#            AWS_SECRET_ACCESS_KEY: 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
+#            AWS_REGION: us-east-1
   loadGenerator:
-    handler: loadGenerator
-    timeout: 300s
-    events:
-      - event:
-          eventType: providers/cloud.pubsub/eventTypes/topic.publish
-          resource: projects/vikj-61740/topics/loadgeneratortopic
-    environment:
-            AWS_ACCESS_KEY_ID: A
-            AWS_SECRET_ACCESS_KEY: X
-            AWS_REGION: us-east-1
+      handler: loadGenerator
+      timeout: 300s
+      events:
+        - http: path
+      environment:
+              AWS_ACCESS_KEY_ID: AKIAJTDKZCIY2K6W5COA
+              AWS_SECRET_ACCESS_KEY: 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
+              AWS_REGION: us-east-1
