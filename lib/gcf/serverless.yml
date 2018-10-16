@@ -3,9 +3,10 @@ service: gcf # NOTE: Don't put the word "google" in here
 provider:
   name: google
   runtime: nodejs
-  region: ${opt:gcp_region, 'us-central1'}
+  region: ${opt:region, 'us-central1'}
   memorySize: 2048
-  credentials: ${opt:gcp_creds_file}
+  credentials: ${opt:gcp-creds-file}
+  # read the project_id from the credentials file using the self.provider.credentials
   project: ${file(${self:provider.credentials}):project_id}
 plugins:
   - serverless-google-cloudfunctions

@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-
+const BbPromise = require('bluebird')
+const fs = BbPromise.promisifyAll(require('fs'))
 const os = require('os')
+const path = require('path')
 const packageJson = require('../package.json')
 const slsArt = require('../lib/')
 
@@ -17,6 +19,15 @@ const hasFlag = (flags, argv) => flags.some(
   } // eslint-disable-line comma-dangle
 )
 
+const bootstrap_error =
+  `Error occured. Serverless-Artillery requires either Google Cloud Platform (GCP) or Amazon Web Service (AWS) to operate. 
+   1) Learn how to setup GCP by following the instructions here: https://serverless.com/framework/docs/providers/google/guide/credentials/ 
+   2) OR, Learn how to set up AWS provider credentials in our docs here: <http://bit.ly/aws-creds-setup>.)`
+const cloudPlatformArgs = {
+  gcpCredentialFileArg: "--gcp-creds-file",
+  cloudPlatformArg: "--cloud-platform"
+}
+
 const yargs = require('yargs')
   .help()
   .version(packageJson.version)
@@ -31,10 +42,30 @@ const yargs = require('yargs')
       description: 'Execute the command in verbose mode.  It will be chatty about what it is attempting to accomplish.',
       requiresArg: false,
     },
+    cloud_platform: {
+      alias: "cloud-platform",
+      description:
+      'Chooses a platform of your choice between \'aws\' or \'gcp\'. If not provided, ' +
+      'a default platform will be chosen based on the presence of ~/.gcloud or ~/.aws directory',
+      requiresArg: false,
+      type: 'string'
+    },
+    gcp_creds_file: {
+      alias: "gcp-creds-file",
+      description: 'Applicable for GCP platform only. This argument provides the file containing the ' +
+      'service account credentials in JSON format. If not provided, the JSON file from ~/.gcloud/ is used. If that ' +
+      'does not exist or in case multiple exists, please setup GCP credentials using ' +
+      'https://serverless.com/framework/docs/providers/google/guide/credentials/',
+      requiresArg: false,
+      type: 'string'
+    }
   })
-  .global(['D', 'V'])
-  .command('deploy', 'Deploy a default version of the function that will execute your Artillery scripts.  See ' +
-    'https://serverless.com/framework/docs/providers/aws/cli-reference/deploy/ for reference.', {})
+  .global(['D', 'V', 'cloud_platform', 'gcp_creds_file'])
+  .command('deploy', 'Deploy a default version of the function that will execute your Artillery scripts.'+
+    os.EOL + os.EOL +
+    'For AWS platform: See https://serverless.com/framework/docs/providers/aws/cli-reference/deploy/ as reference.' +
+    os.EOL + os.EOL +
+    'For GCP platform: use the option \'deploy help\' to view the respective options of deploy command', {})
   .command(
     'invoke',
     'Invoke your function with your Artillery script.  Will prefer a script given by `-d`, `--data`, `-p`, or ' +
@@ -145,7 +176,8 @@ const yargs = require('yargs')
       }
     } // eslint-disable-line comma-dangle
   )
-  .command('kill', 'Stop a currently running load test and remove the function.', {})
+  .command('kill', 'Stop a currently running load test and remove the function. Works only when the platform is AWS',
+    {})
   .command('remove', 'Remove the function and the associated resources created for or by it.  See ' +
     'https://serverless.com/framework/docs/providers/aws/cli-reference/remove/ for reference.', {})
   .command(
@@ -209,11 +241,95 @@ const yargs = require('yargs')
   )
   .demand(1)
 
+const impl = {
+  determineCloudPlatform: (options) => {
+    if (options && options.cloud_platform) {
+      if (options.verbose) {
+        console.log(`cloud_platform argument already exists, value = ${options.cloud_platform}`)
+      }
+      if (options.cloud_platform === slsArt.cloudPlatform.aws || options.cloud_platform === slsArt.cloudPlatform.gcp)
+      {
+        return options.cloud_platform
+      }
+      else {
+        throw new Error(
+          `Invalid cloud_platform value: ${options.cloud_platform}. Valid values are ` +
+          `\'${slsArt.cloudPlatform.gcp}\' or \'${slsArt.cloudPlatform.aws}\'`)
+      }
+    }
+    const homeDir = os.homedir()
+    const defaultGcloudDir = path.join(homeDir, ".gcloud")
+    const defaultAwsDir = path.join(homeDir, ".aws")
+
+    const gcloudExists = fs.existsSync(defaultGcloudDir) && fs.lstatSync(defaultGcloudDir).isDirectory()
+    const awsExists = fs.existsSync(defaultAwsDir) && fs.lstatSync(defaultAwsDir).isDirectory()
+
+    // if both exists, it is ambiguous, so an error
+    if (gcloudExists && awsExists) {
+      throw new Error(`Not able to determine the cloud platform since both the ~/.aws and ~/.gcloud directories exist`)
+    }
+    if (gcloudExists) {
+      console.log('Determining gcp as cloud platform since ~/.gcloud exists')
+      return slsArt.cloudPlatform.gcp
+    }
+
+    if (awsExists) {
+      console.log('Determining aws as cloud platform since ~/.aws exists')
+      return slsArt.cloudPlatform.aws
+    }
+
+    // none of the cloud platform directories exist, throw an error
+    throw new Error(bootstrap_error)
+  },
+  findServiceAccountCredentialsFileForGCPPlatform: (cloudPlatform, options) => {
+    if (cloudPlatform === slsArt.cloudPlatform.aws) {
+      throw new Error(`No credentials file required for cloud platform = ${cloudPlatform}. Returning`)
+    }
+    if (options && options.gcp_creds_file) {
+      throw new Error(`gcp_creds_file argument already exists. That one should be used instead`)
+    }
+    const homeDir = os.homedir()
+    const defaultGcloudDir = path.join(homeDir, ".gcloud")
+    const jsonFiles = []
+    if (fs.existsSync(defaultGcloudDir)) {
+      var stat = fs.lstatSync(defaultGcloudDir);
+      if (stat.isDirectory()) {
+        fs.readdirSync(defaultGcloudDir).forEach(fileName => {
+          if (fileName.endsWith(".json")) {
+            jsonFiles.push(fileName)
+          }
+        })
+      }
+      else {
+        throw new Error(`.gcloud file exists but is not a directory in the home=${homeDir} directory. ${bootstrap_error}`)
+      }
+    }
+    else {
+      throw new Error(`.gcloud directory does not exist in home=${homeDir} directory. ${bootstrap_error}`)
+    }
+
+    if (jsonFiles.length === 1) {
+      const jsonCredFile = path.join(defaultGcloudDir, jsonFiles[0])
+      if (options.verbose) {
+        console.log(`Returning the file ${jsonCredFile} as the credentials file for GCP platform`)
+      }
+      return jsonCredFile
+    }
+    else if (jsonFiles.length > 1) {
+      throw new Error(`Multiple json files in ${defaultGcloudDir} = ${JSON.stringify(jsonFiles)}, ` +
+      `please set the path to the file explicitly. ${bootstrap_error}`)
+    }
+    else {
+      throw new Error(`No service account credential json file present in ` +
+        `the default gcloud directory: ${defaultGcloudDir}. ${bootstrap_error}`)
+    }
+  },
+}
+
 const command = yargs.argv._[0]
 
 if (yargs.argv.debug) {
   console.log(`options were:${os.EOL}${JSON.stringify(yargs.argv, null, 2)}`)
-  console.log(`command that will be executed: slsArt[${command}](${yargs.argv})`)
 }
 
 if (!(command in slsArt)) {
@@ -221,11 +337,45 @@ if (!(command in slsArt)) {
   process.exit(1)
 }
 
-slsArt[command](yargs.argv)
-  .catch((ex) => {
-    console.error(ex.message)
-    if (yargs.argv.verbose) {
-      console.error(ex.stack)
+try {
+  // determine the cloud platform to be used based on the arguments and environment
+  const cloudPlatform = impl.determineCloudPlatform(yargs.argv)
+
+  // set the credentials file argument
+  if (cloudPlatform === slsArt.cloudPlatform.gcp && (yargs.argv && !yargs.argv.gcp_creds_file)) {
+    var serviceAccountCredentialsFile = impl.findServiceAccountCredentialsFileForGCPPlatform(cloudPlatform, yargs.argv)
+    if (!serviceAccountCredentialsFile) {
+      throw new Error(`No service account credentials file present for the GCP cloud platform. ${bootstrap_error}`)
     }
-    process.exit(1)
-  })
+    process.argv.push(`${cloudPlatformArgs.gcpCredentialFileArg}`)
+    process.argv.push(serviceAccountCredentialsFile)
+  }
+
+  if (yargs.argv.debug) {
+    console.log(
+      `command that will be executed: slsArt[${command}](${cloudPlatform}, ${JSON.stringify(yargs.argv)})
+      with process args: ${process.argv}`)
+  }
+
+  slsArt[command](cloudPlatform, yargs.argv)
+    .catch((ex) => {
+      if (yargs.argv.verbose || yargs.argv.debug) {
+        console.error(ex.stack)
+      }
+      else {
+        console.error(ex.message)
+      }
+      process.exit(1)
+    })
+} catch (err) {
+  if (yargs.argv.verbose || yargs.argv.debug) {
+    console.error(err)
+  }
+  else {
+    console.error(err.message)
+  }
+  process.exit(1)
+}
+
+
+
