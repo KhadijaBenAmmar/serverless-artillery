@@ -49,3 +49,5 @@ jspm_packages
 
 #Serverless
 **/.serverless
+
+**/package-lock.json
