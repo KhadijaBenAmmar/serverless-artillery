@@ -266,7 +266,8 @@ const impl = {
 
     // if both exists, it is ambiguous, so an error
     if (gcloudExists && awsExists) {
-      throw new Error(`Not able to determine the cloud platform since both the ~/.aws and ~/.gcloud directories exist`)
+      throw new Error(`Not able to determine the cloud platform since both the ~/.aws and ~/.gcloud directories exist` +
+      `${bootstrap_error}`)
     }
     if (gcloudExists) {
       console.log('Determining gcp as cloud platform since ~/.gcloud exists')
