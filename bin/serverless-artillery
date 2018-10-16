@@ -266,7 +266,7 @@ const impl = {
 
     // if both exists, it is ambiguous, so an error
     if (gcloudExists && awsExists) {
-      throw new Error(`Not able to determine the cloud platform since both the ~/.aws and ~/.gcloud directories exist` +
+      throw new Error(`Not able to determine the cloud platform since both the ~/.aws and ~/.gcloud directories exist. ` +
       `${bootstrap_error}`)
     }
     if (gcloudExists) {
@@ -318,7 +318,7 @@ const impl = {
     }
     else if (jsonFiles.length > 1) {
       throw new Error(`Multiple json files in ${defaultGcloudDir} = ${JSON.stringify(jsonFiles)}, ` +
-      `please set the path to the file explicitly. ${bootstrap_error}`)
+      `Set the path to the file explicitly by using the argument ${cloudPlatformArgs.gcpCredentialFileArg}. ${os.EOL} ${bootstrap_error}`)
     }
     else {
       throw new Error(`No service account credential json file present in ` +
