@@ -26,7 +26,3 @@ functions:
       timeout: 300s
       events:
         - http: path
-      environment:
-              AWS_ACCESS_KEY_ID: A
-              AWS_SECRET_ACCESS_KEY: B
-              AWS_REGION: us-east-1
