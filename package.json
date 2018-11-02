@@ -39,6 +39,7 @@
   "homepage": "https://github.com/Nordstrom/serverless-artillery#readme",
   "dependencies": {
     "aws-sdk": "^2.230.1",
+    "serverless-google-cloudfunctions": "https://github.com/nethunter/serverless-google-cloudfunctions/tarball/master",
     "bluebird": "^3.5.1",
     "diff": "^3.5.0",
     "get-stdin": "^6.0.0",
@@ -63,7 +64,6 @@
     "nyc": "^11.7.1",
     "quibble": "^0.5.5",
     "serverless": "^1.26.1",
-    "serverless-google-cloudfunctions": "https://github.com/nethunter/serverless-google-cloudfunctions/tarball/master",
     "sinon": "^5.0.2",
     "sinon-chai": "^3.0.0"
   },
