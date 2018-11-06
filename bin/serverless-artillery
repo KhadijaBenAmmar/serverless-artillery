@@ -31,11 +31,11 @@ const yargs = require('yargs')
       description: 'Execute the command in verbose mode.  It will be chatty about what it is attempting to accomplish.',
       requiresArg: false,
     },
-    cloud_platform: {
-      alias: "cloud-platform",
+    cloud_provider: {
+      alias: "cloud-provider",
       description:
-      'Chooses a platform of your choice between \'aws\' or \'gcp\'. If not provided, ' +
-      'a default platform will be chosen based on the presence of ~/.gcloud or ~/.aws directory',
+      'Chooses a provider of your choice between \'aws\' or \'gcp\'. If not provided, ' +
+      'a provider will be chosen based on the presence of credentials in your environment',
       requiresArg: false,
       type: 'string'
     },
@@ -49,7 +49,7 @@ const yargs = require('yargs')
       type: 'string'
     }
   })
-  .global(['D', 'V', 'cloud_platform', 'gcp_creds_file'])
+  .global(['D', 'V', 'cloud_provider', 'gcp_creds_file'])
   .command('deploy', 'Deploy a default version of the function that will execute your Artillery scripts.'+
     os.EOL + os.EOL +
     'For AWS platform: See https://serverless.com/framework/docs/providers/aws/cli-reference/deploy/ as reference.' +
