@@ -5,9 +5,11 @@ provider:
   runtime: nodejs
   region: ${opt:region, 'us-central1'}
   memorySize: 2048
-  credentials: ${opt:gcp-creds-file}
+  # the credentials can be provided as a command line argument, or read from env, or fallback to a default file
+  # location
+  credentials: ${opt:google-creds-file, env:GOOGLE_APPLICATION_CREDENTIALS, '~/.gcloud/keyfile.json'}
   # read the project_id from the credentials file using the self.provider.credentials
-  project: ${file(${self:provider.credentials}):project_id}
+  project: ${file(${self:provider.credentials}):project_id, 'YOUR-GOOGLE-PROJECT-ID'}
 plugins:
   - serverless-google-cloudfunctions
 

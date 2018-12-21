@@ -34,22 +34,23 @@ const yargs = require('yargs')
     cloud_provider: {
       alias: "cloud-provider",
       description:
-      'Chooses a provider of your choice between \'aws\' or \'gcp\'. If not provided, ' +
-      'a provider will be chosen based on the presence of credentials in your environment',
+      'Chooses a provider of your choice between \'aws\' or \'google\'. If not provided, ' +
+      'aws is chosen as default',
       requiresArg: false,
       type: 'string'
     },
-    gcp_creds_file: {
-      alias: "gcp-creds-file",
-      description: 'Applicable for GCP platform only. This argument provides the file containing the ' +
-      'service account credentials in JSON format. If not provided, the JSON file from ~/.gcloud/ is used. If that ' +
-      'does not exist or in case multiple exists, please setup GCP credentials using ' +
+    google_creds_file: {
+      alias: "google-creds-file",
+      description: 'Applicable for Google Cloud platform (GCP) only. This argument provides the file containing the ' +
+      'service account credentials in JSON format. If not provided, environment varialble GOOGLE_APPLICATION_CREDENTIALS' +
+      ' is used. If that is also not specified then the JSON file ~/.gcloud/keyfile.json is used. If that ' +
+      'does not exist, please setup GCP credentials using ' +
       'https://serverless.com/framework/docs/providers/google/guide/credentials/',
       requiresArg: false,
       type: 'string'
     }
   })
-  .global(['D', 'V', 'cloud_provider', 'gcp_creds_file'])
+  .global(['D', 'V', 'cloud_provider', 'google_creds_file'])
   .command('deploy', 'Deploy a default version of the function that will execute your Artillery scripts.'+
     os.EOL + os.EOL +
     'For AWS platform: See https://serverless.com/framework/docs/providers/aws/cli-reference/deploy/ as reference.' +
