@@ -31,16 +31,14 @@ const yargs = require('yargs')
       description: 'Execute the command in verbose mode.  It will be chatty about what it is attempting to accomplish.',
       requiresArg: false,
     },
-    cloud_provider: {
-      alias: "cloud-provider",
+    ['cloud-provider']: {
       description:
       'Chooses a provider of your choice between \'aws\' or \'google\'. If not provided, ' +
       'aws is chosen as default',
-      requiresArg: false,
+      default: 'aws',
       type: 'string'
     },
-    google_creds_file: {
-      alias: "google-creds-file",
+    ['google-creds-file']: {
       description: 'Applicable for Google Cloud platform (GCP) only. This argument provides the file containing the ' +
       'service account credentials in JSON format. If not provided, environment varialble GOOGLE_APPLICATION_CREDENTIALS' +
       ' is used. If that is also not specified then the JSON file ~/.gcloud/keyfile.json is used. If that ' +
@@ -50,7 +48,7 @@ const yargs = require('yargs')
       type: 'string'
     }
   })
-  .global(['D', 'V', 'cloud_provider', 'google_creds_file'])
+  .global(['D', 'V'])
   .command('deploy', 'Deploy a default version of the function that will execute your Artillery scripts.'+
     os.EOL + os.EOL +
     'For AWS platform: See https://serverless.com/framework/docs/providers/aws/cli-reference/deploy/ as reference.' +
