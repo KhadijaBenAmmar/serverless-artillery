@@ -4,6 +4,7 @@
   # There is a lot more that Artillery can do.
   # You can find great documentation of the possibilities at:
   # https://artillery.io/docs/
+  _trace: true
   config:
     target: "https://cloud.google.com" # this hostname will be used for each part of the flow
     phases:
