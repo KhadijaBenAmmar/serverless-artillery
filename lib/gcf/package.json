@@ -8,12 +8,13 @@
   "scripts": {
     "start": "node server.js"
   },
-    "dependencies": {
-      "express": "^4.16.2",
-      "@google-cloud/pubsub": "^0.20.1",
+  "dependencies": {
+    "@google-cloud/pubsub": "^0.20.1",
     "artillery": "git+https://github.com/Nordstrom/artillery.git#ffb0a714b713e9537815fdaf3e505513f35bfe57",
+    "artillery-plugin-influxdb": "^0.9.0",
     "axios": "^0.18.0",
     "dateformat": "^3.0.3",
+    "express": "^4.16.2",
     "js-yaml": "^3.11.0",
     "lodash.merge": "^4.6.1",
     "lodash.omit": "^4.5.0",
