@@ -5,7 +5,7 @@ provider:
   #   DATADOG_API_KEY: "db49776db541690395af04d9b7ba6af8"
   name: google
   runtime: nodejs8
-  region: ${opt:region, 'us-central1'}
+  region: ${opt:region, 'europe-west1'}
   memorySize: 2048
   # the credentials can be provided as a command line argument, or read from env, or fallback to a default file
   # location
