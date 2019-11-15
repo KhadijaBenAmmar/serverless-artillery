@@ -1,4 +1,4 @@
-service: serverless-artillery-gcf # NOTE: Don't put the word "google" in here
+service: serverless-artillery-gcf-fortest # NOTE: Don't put the word "google" in here
 
 provider:
   # environment:

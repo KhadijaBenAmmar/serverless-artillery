@@ -39,7 +39,7 @@
   "homepage": "https://github.com/Nordstrom/serverless-artillery#readme",
   "dependencies": {
     "aws-sdk": "^2.230.1",
-    "serverless-google-cloudfunctions": "^2.2.0",
+    "serverless-google-cloudfunctions": "2.2.0",
     "bluebird": "^3.5.1",
     "diff": "^3.5.0",
     "get-stdin": "^6.0.0",
