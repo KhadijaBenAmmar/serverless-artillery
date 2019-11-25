@@ -7,8 +7,9 @@
   "main": "index.js",
   "dependencies": {
     "@google-cloud/pubsub": "^0.20.1",
-    "artillery": "git+https://github.com/Nordstrom/artillery.git#ffb0a714b713e9537815fdaf3e505513f35bfe57",
+    "artillery": "git+https://github.com/yelloan/artillery.git#2065c9e25567b36b4d65c71c88cf111152edc3eb",
     "artillery-plugin-datadog": "^0.2.0",
+    "artillery-plugin-publish-metrics": "^1.0.1",
     "axios": "^0.18.0",
     "dateformat": "^3.0.3",
     "js-yaml": "^3.11.0",

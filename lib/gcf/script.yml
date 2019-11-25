@@ -5,6 +5,15 @@
 # https://artillery.io/docs/
 mode: "mon"
 config:
+  plugins:
+    datadog:
+      # Custom hostname (leave blank if not desired) 
+      host: ''
+      # Custom metric prefix (example, to 'serverless-artillery') 
+      prefix: 'serverless-artillery'
+      # Additional tags for all metrics 
+      tags:
+        - 'mode:test'
   # this hostname will be used as a prefix for each URI in the flow unless a complete URI is specified
   target: "https://algoan.com"
   phases:
